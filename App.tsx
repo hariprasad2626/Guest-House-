@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { type Room, type Booking, BookingStatus } from './types';
+import { type Room, type Booking } from './types';
 import Header from './components/Header';
 import HomePage from './components/Welcome';
 import RoomDetail from './components/PropertyDetailsCard';
@@ -26,47 +26,56 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const apiCall = useCallback(async (action: string, payload?: any) => {
     setLoading(true);
     setError(null);
     try {
-      const roomsRes = await fetch(`${SCRIPT_URL}?action=getRooms`);
-      const roomsData = await roomsRes.json();
-      if (!roomsData.success) throw new Error(roomsData.error || 'Failed to fetch rooms.');
-      setRooms(roomsData.data);
+      // Always use POST with text/plain to avoid CORS preflight issues with Google Apps Script
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({ action, payload }),
+      });
 
-      const settingsRes = await fetch(`${SCRIPT_URL}?action=getSettings`);
-      const settingsData = await settingsRes.json();
-      if (!settingsData.success) throw new Error(settingsData.error || 'Failed to fetch settings.');
-      setSettings(settingsData.data);
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      
+      const resultText = await response.text();
+      const result = JSON.parse(resultText);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'An unknown API error occurred.');
+      }
+      
+      return result.data;
 
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = `Failed to fetch data. This is likely a CORS issue. Please check your internet connection and ensure the Google Apps Script is deployed correctly with 'Anyone' access. Error: ${err.message}`;
+      setError(errorMessage);
+      console.error("API Call Error:", errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const fetchData = useCallback(async () => {
+    try {
+      const roomsData = await apiCall('getRooms');
+      setRooms(roomsData);
+      const settingsData = await apiCall('getSettings');
+      setSettings(settingsData);
+    } catch (err) {
+      // Error is already set by apiCall, no need to set it again here.
+    }
+  }, [apiCall]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const apiPost = async (action: string, payload: any) => {
-    try {
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors', // Required for simple POST requests to Apps Script
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action, payload }),
-      });
-      // no-cors means we can't read the response, so we just assume success and refetch
-      await fetchData();
-    } catch (err: any) {
-      setError(`Operation failed: ${err.message}. Please refresh the page.`);
-    }
-  };
 
   const handleSelectRoom = (room: Room) => {
     setSelectedRoom(room);
@@ -90,54 +99,89 @@ function App() {
   };
   
   const handleBookingRequest = async (bookingDetails: Omit<Booking, 'id' | 'status'>) => {
-    setLoading(true);
-    await apiPost('addBooking', bookingDetails);
-    // Optimistically update the selected room to show the new pending booking
-    const updatedRoom = rooms.find(r => r.id === bookingDetails.roomId);
-    if(updatedRoom) {
-      setSelectedRoom({
-        ...updatedRoom,
-        bookings: [...updatedRoom.bookings, { ...bookingDetails, id: Date.now(), status: 'pending' }]
+    try {
+      const newBooking = await apiCall('addBooking', bookingDetails);
+      const updatedRooms = rooms.map(room => {
+        if (room.id === bookingDetails.roomId) {
+          const newBookingData = { ...bookingDetails, ...newBooking };
+          return { ...room, bookings: [...room.bookings, newBookingData] };
+        }
+        return room;
       });
+      setRooms(updatedRooms);
+      // Also update selectedRoom if it's the one being booked
+      if (selectedRoom?.id === bookingDetails.roomId) {
+          const newBookingData = { ...bookingDetails, ...newBooking };
+          setSelectedRoom(prev => prev ? {...prev, bookings: [...prev.bookings, newBookingData]} : null);
+      }
+    } catch (err) {
+      console.error('Failed to add booking:', err);
     }
-    setLoading(false);
   };
 
   const handleUpdateBookingStatus = async (roomId: number, bookingId: number, status: 'confirmed' | 'declined') => {
-    setLoading(true);
-    await apiPost('updateBookingStatus', { bookingId, status });
-    setLoading(false);
+    try {
+      await apiCall('updateBookingStatus', { bookingId, status });
+      const updatedRooms = rooms.map(room => {
+        if (room.id === roomId) {
+          if (status === 'declined') {
+            return { ...room, bookings: room.bookings.filter(b => b.id !== bookingId) };
+          }
+          return {
+            ...room,
+            bookings: room.bookings.map(b => b.id === bookingId ? { ...b, status } : b),
+          };
+        }
+        return room;
+      });
+      setRooms(updatedRooms);
+    } catch (err) {
+      console.error('Failed to update booking status:', err);
+    }
   };
   
   const handleSaveRoom = async (roomData: Room) => {
-    setLoading(true);
-    await apiPost('saveRoom', roomData);
-    setLoading(false);
+    try {
+      const savedRoom = await apiCall('saveRoom', roomData);
+      if (roomData.id) { // Existing room updated
+        setRooms(rooms.map(r => r.id === roomData.id ? {...r, ...roomData} : r));
+      } else { // New room created
+        setRooms([...rooms, { ...roomData, id: savedRoom.id, bookings: [], amenities: [] }]);
+      }
+    } catch (err) {
+      console.error('Failed to save room:', err);
+    }
   };
 
   const handleDeleteRoom = async (roomId: number) => {
     if (window.confirm('Are you sure you want to permanently delete this room?')) {
-        setLoading(true);
-        await apiPost('deleteRoom', { roomId });
-        setLoading(false);
+      try {
+        await apiCall('deleteRoom', { roomId });
+        setRooms(rooms.filter(r => r.id !== roomId));
+      } catch (err) {
+        console.error('Failed to delete room:', err);
+      }
     }
   };
 
   const handleUpdateSettings = async (newSettings: AppSettings) => {
-    setLoading(true);
-    await apiPost('updateSettings', newSettings);
-    setLoading(false);
+    try {
+      await apiCall('updateSettings', newSettings);
+      setSettings(newSettings);
+    } catch (err) {
+      console.error('Failed to update settings:', err);
+    }
   };
 
   const renderContent = () => {
-    if (loading) {
+    if (loading && rooms.length === 0) { // Only show full-page spinner on initial load
       return (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-teal-500"></div>
         </div>
       );
     }
-    if (error) {
+    if (error && rooms.length === 0) { // Only show full-page error if no data could be loaded
       return <ErrorMessage message={error} />;
     }
 
@@ -162,6 +206,8 @@ function App() {
       <Header onNavigate={navigate} isAdmin={isAdmin} />
       <main className="container mx-auto px-4 py-8 max-w-6xl flex-grow">
         {renderContent()}
+        {loading && <div className="fixed top-4 right-4 bg-teal-500 text-white text-xs font-semibold px-3 py-1 rounded-full animate-pulse z-20">Syncing...</div>}
+        {error && !loading && <div className="fixed bottom-4 right-4 bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-lg z-20">{error.length > 100 ? error.substring(0, 100) + '...' : error}</div>}
       </main>
       <Footer />
     </div>
