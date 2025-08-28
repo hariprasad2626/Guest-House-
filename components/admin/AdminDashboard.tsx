@@ -7,16 +7,17 @@ import AdminSettings from './AdminSettings';
 
 interface AdminDashboardProps {
   rooms: Room[];
-  setRooms: React.Dispatch<React.SetStateAction<Room[]>>;
   onLogout: () => void;
   onUpdateBookingStatus: (roomId: number, bookingId: number, status: 'confirmed' | 'declined') => void;
   settings: { upiId: string };
   onUpdateSettings: (settings: { upiId: string }) => void;
+  onSaveRoom: (room: Room) => Promise<void>;
+  onDeleteRoom: (roomId: number) => Promise<void>;
 }
 
 type AdminTab = 'rooms' | 'accounting' | 'settings';
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, setRooms, onLogout, onUpdateBookingStatus, settings, onUpdateSettings }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpdateBookingStatus, settings, onUpdateSettings, onSaveRoom, onDeleteRoom }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('rooms');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
@@ -32,19 +33,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, setRooms, onLogo
     setIsFormOpen(true);
   };
 
-  const handleDelete = (roomId: number) => {
-    if (window.confirm('Are you sure you want to delete this room?')) {
-      setRooms(rooms.filter(room => room.id !== roomId));
-    }
-  };
-
-  const handleSaveRoom = (roomData: Room) => {
-    if (editingRoom) {
-      setRooms(rooms.map(r => (r.id === roomData.id ? roomData : r)));
-    } else {
-      const newRoom = { ...roomData, id: Date.now(), bookings: [] };
-      setRooms([...rooms, newRoom]);
-    }
+  const handleSaveRoom = async (roomData: Room) => {
+    await onSaveRoom(roomData);
     setIsFormOpen(false);
   };
 
@@ -80,9 +70,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, setRooms, onLogo
                          <button 
                             onClick={() => setBookingModalRoom(room)}
                             className="text-sm font-medium text-blue-600 hover:text-blue-900 relative disabled:text-slate-400 disabled:cursor-not-allowed"
-                            disabled={room.bookings.length === 0}
+                            disabled={!room.bookings || room.bookings.length === 0}
                         >
-                            Manage ({room.bookings.length})
+                            Manage ({room.bookings?.length || 0})
                             {pendingBookings > 0 && (
                                 <span className="absolute -top-2 -right-3 flex h-5 w-5">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -93,7 +83,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, setRooms, onLogo
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onClick={() => handleEdit(room)} className="text-teal-600 hover:text-teal-900 mr-4">Edit</button>
-                        <button onClick={() => handleDelete(room.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                        <button onClick={() => onDeleteRoom(room.id)} className="text-red-600 hover:text-red-900">Delete</button>
                       </td>
                     </tr>
                   )

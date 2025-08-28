@@ -14,7 +14,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
     pricePerNight: 0,
     maxGuests: 1,
   });
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState('');
 
   useEffect(() => {
     if (room) {
@@ -24,7 +24,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
         pricePerNight: room.pricePerNight,
         maxGuests: room.maxGuests,
       });
-      setImagePreviews(room.images);
+      setImageUrls(room.images.join(', '));
     }
   }, [room]);
 
@@ -36,31 +36,14 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
     }));
   };
   
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      filesArray.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreviews(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-  
-  const handleRemoveImage = (indexToRemove: number) => {
-    setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const roomDataToSave: Room = {
         ...formData,
-        id: room?.id || Date.now(),
-        images: imagePreviews.length > 0 ? imagePreviews : ['https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=800&auto=format&fit=crop'],
+        id: room?.id || 0, // Backend will assign new ID if 0
+        images: imageUrls.split(',').map(url => url.trim()).filter(url => url),
         amenities: room?.amenities || [],
-        bookings: room?.bookings || [], // Preserve existing bookings on edit
+        bookings: room?.bookings || [],
     };
     onSave(roomDataToSave);
   };
@@ -79,18 +62,9 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
             <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full input" required />
           </div>
           <div>
-            <label htmlFor="images" className="block text-sm font-medium text-slate-600">Upload Images</label>
-            <input type="file" name="images" id="images" onChange={handleImageChange} multiple accept="image/*" className="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"/>
-            {imagePreviews.length > 0 && (
-              <div className="mt-4 grid grid-cols-3 gap-4">
-                {imagePreviews.map((src, index) => (
-                  <div key={index} className="relative group">
-                    <img src={src} alt={`Preview ${index+1}`} className="w-full h-24 object-cover rounded-md" />
-                    <button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <label htmlFor="imageUrls" className="block text-sm font-medium text-slate-600">Image URLs</label>
+            <textarea name="imageUrls" id="imageUrls" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} rows={3} className="mt-1 block w-full input" placeholder="https://.../image1.jpg, https://.../image2.jpg" required />
+            <p className="text-xs text-slate-500 mt-1">Paste image URLs, separated by commas.</p>
           </div>
           <div>
             <label htmlFor="pricePerNight" className="block text-sm font-medium text-slate-600">Price per Night (₹)</label>
