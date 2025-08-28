@@ -7,9 +7,10 @@ interface RoomDetailProps {
   room: Room;
   onBack: () => void;
   onBook: (bookingDetails: Omit<Booking, 'id' | 'status'>) => void;
+  upiId: string;
 }
 
-const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook }) => {
+const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) => {
   const [bookingRequested, setBookingRequested] = useState(false);
   const [error, setError] = useState('');
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -91,6 +92,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook }) => {
           onSubmit={handleConfirmBooking}
           roomName={room.name}
           totalAmount={totalAmount}
+          upiId={upiId}
         />
       )}
       <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-all z-10">

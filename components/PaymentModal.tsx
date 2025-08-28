@@ -6,6 +6,7 @@ interface PaymentModalProps {
   onSubmit: (paymentInfo: { screenshot?: File; comments: string }) => void;
   roomName: string;
   totalAmount: number;
+  upiId: string;
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -14,12 +15,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onSubmit,
   roomName,
   totalAmount,
+  upiId,
 }) => {
   const [screenshot, setScreenshot] = useState<File | undefined>();
   const [comments, setComments] = useState('');
   const [error, setError] = useState('');
   
-  const upiId = 'dasosmi@icici';
   const payeeName = 'Serene Escapes';
   const qrData = encodeURIComponent(`upi://pay?pa=${upiId}&pn=${payeeName}&am=${totalAmount}&cu=INR`);
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrData}`;

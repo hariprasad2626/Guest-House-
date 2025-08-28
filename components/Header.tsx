@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, isAdmin }) => {
         </button>
         <nav className="flex gap-6 text-slate-600 font-medium items-center">
             <button onClick={() => onNavigate('home')} className="hover:text-teal-600 transition-colors">Rooms</button>
-            <a href="#" className="hover:text-teal-600 transition-colors hidden md:block">About</a>
+            <button onClick={() => onNavigate('about')} className="hover:text-teal-600 transition-colors hidden md:block">About</button>
             <a href="#" className="hover:text-teal-600 transition-colors hidden md:block">Contact</a>
             <button 
               onClick={() => onNavigate(isAdmin ? 'adminDashboard' : 'adminLogin')} 

@@ -11,6 +11,19 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
     const pending = room.bookings.filter(b => b.status === 'pending');
     const confirmed = room.bookings.filter(b => b.status === 'confirmed');
 
+    const handleApprove = (bookingId: number) => {
+        onUpdateBookingStatus(room.id, bookingId, 'confirmed');
+        alert(`Booking Confirmed!\n\nA simulated invoice email has been sent to the customer.`);
+        onClose();
+    };
+
+    const handleDecline = (bookingId: number) => {
+        if (window.confirm('Are you sure you want to decline and remove this booking request?')) {
+            onUpdateBookingStatus(room.id, bookingId, 'declined');
+            onClose();
+        }
+    };
+
     const PaperclipIcon = () => (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
@@ -60,8 +73,8 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
 
                                         {/* Column 3: Actions */}
                                         <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => onUpdateBookingStatus(room.id, b.id, 'confirmed')} className="bg-green-100 text-green-800 text-sm font-semibold py-2 px-3 rounded-lg hover:bg-green-200 border border-green-200 transition-colors">Approve</button>
-                                            <button onClick={() => onUpdateBookingStatus(room.id, b.id, 'declined')} className="bg-red-100 text-red-800 text-sm font-semibold py-2 px-3 rounded-lg hover:bg-red-200 border border-red-200 transition-colors">Decline</button>
+                                            <button onClick={() => handleApprove(b.id)} className="bg-green-100 text-green-800 text-sm font-semibold py-2 px-3 rounded-lg hover:bg-green-200 border border-green-200 transition-colors">Approve</button>
+                                            <button onClick={() => handleDecline(b.id)} className="bg-red-100 text-red-800 text-sm font-semibold py-2 px-3 rounded-lg hover:bg-red-200 border border-red-200 transition-colors">Decline</button>
                                         </div>
                                     </div>
                                 </li>

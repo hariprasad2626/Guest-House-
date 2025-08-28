@@ -7,14 +7,20 @@ import Footer from './components/SkeletonLoader';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { initialRooms } from './services/geminiService';
+import AboutPage from './components/AboutPage';
 
-export type View = 'home' | 'roomDetail' | 'adminLogin' | 'adminDashboard';
+export type View = 'home' | 'roomDetail' | 'adminLogin' | 'adminDashboard' | 'about';
+
+interface AppSettings {
+  upiId: string;
+}
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rooms, setRooms] = useState<Room[]>(initialRooms);
+  const [settings, setSettings] = useState<AppSettings>({ upiId: 'dasosmi@icici' });
 
   const handleSelectRoom = (room: Room) => {
     setSelectedRoom(room);
@@ -46,9 +52,7 @@ function App() {
             id: Date.now(),
             status: 'pending',
           };
-          // Update the specific room in the list
           const updatedRoom = { ...room, bookings: [...room.bookings, newBooking] };
-          // If this is the currently selected room, update that state too
           if (selectedRoom?.id === room.id) {
             setSelectedRoom(updatedRoom);
           }
@@ -82,14 +86,20 @@ function App() {
     );
   };
 
+  const handleUpdateSettings = (newSettings: AppSettings) => {
+    setSettings(newSettings);
+  }
+
   const renderContent = () => {
     switch (currentView) {
       case 'roomDetail':
-        return selectedRoom ? <RoomDetail room={selectedRoom} onBack={() => navigate('home')} onBook={handleBookingRequest} /> : <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} />;
+        return selectedRoom ? <RoomDetail room={selectedRoom} onBack={() => navigate('home')} onBook={handleBookingRequest} upiId={settings.upiId} /> : <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} />;
       case 'adminLogin':
         return <AdminLogin onLogin={handleLogin} />;
       case 'adminDashboard':
-        return isAdmin ? <AdminDashboard rooms={rooms} setRooms={setRooms} onLogout={handleLogout} onUpdateBookingStatus={handleUpdateBookingStatus} /> : <AdminLogin onLogin={handleLogin} />;
+        return isAdmin ? <AdminDashboard rooms={rooms} setRooms={setRooms} onLogout={handleLogout} onUpdateBookingStatus={handleUpdateBookingStatus} settings={settings} onUpdateSettings={handleUpdateSettings} /> : <AdminLogin onLogin={handleLogin} />;
+      case 'about':
+        return <AboutPage />;
       case 'home':
       default:
         return <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} />;
