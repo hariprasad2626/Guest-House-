@@ -9,6 +9,7 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AboutPage from './components/AboutPage';
 import ErrorMessage from './components/ErrorMessage';
+import WhatsAppIcon from './components/icons/WhatsAppIcon';
 
 export type View = 'home' | 'roomDetail' | 'adminLogin' | 'adminDashboard' | 'about';
 
@@ -207,6 +208,18 @@ function App() {
         {loading && <div className="fixed top-4 right-4 bg-teal-500 text-white text-xs font-semibold px-3 py-1 rounded-full animate-pulse z-20">Syncing...</div>}
         {error && !loading && <div className="fixed bottom-4 right-4 bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-lg z-20">{error.length > 100 ? error.substring(0, 100) + '...' : error}</div>}
       </main>
+      
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/919735933454"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-transform hover:scale-110 z-50"
+        aria-label="Contact us on WhatsApp"
+      >
+        <WhatsAppIcon className="w-8 h-8" />
+      </a>
+
       <Footer />
     </div>
   );

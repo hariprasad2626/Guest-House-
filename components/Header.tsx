@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View } from '../App';
 
@@ -16,7 +17,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, isAdmin }) => {
         <nav className="flex gap-6 text-slate-600 font-medium items-center">
             <button onClick={() => onNavigate('home')} className="hover:text-teal-600 transition-colors">Rooms</button>
             <button onClick={() => onNavigate('about')} className="hover:text-teal-600 transition-colors hidden md:block">About</button>
-            <a href="tel:9735933454" className="hover:text-teal-600 transition-colors hidden md:block">Contact</a>
             <button 
               onClick={() => onNavigate(isAdmin ? 'adminDashboard' : 'adminLogin')} 
               className="bg-slate-100 px-3 py-1 rounded-md hover:bg-slate-200 transition-colors"
