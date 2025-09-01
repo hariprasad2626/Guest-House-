@@ -24,6 +24,15 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     checkout: '',
   });
   const [totalAmount, setTotalAmount] = useState(0);
+  
+  const placeholderImage = 'https://placehold.co/400x400/e2e8f0/cbd5e1?text=Serene+Escapes';
+  // Create a display-ready array for the grid, padded with placeholders
+  const displayImages = [
+    room.images?.[0] || placeholderImage,
+    room.images?.[1] || placeholderImage,
+    room.images?.[2] || placeholderImage,
+  ];
+
 
   const handleRequestBooking = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,9 +115,9 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
       </button>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0.5 max-h-[500px]">
-        <img src={room.images[0]} alt={room.name} className="col-span-2 row-span-2 h-full w-full object-cover" />
-        <img src={room.images[1]} alt={room.name} className="h-full w-full object-cover hidden md:block" />
-        <img src={room.images[2]} alt={room.name} className="h-full w-full object-cover hidden md:block" />
+        <img src={displayImages[0]} alt={room.name} className="col-span-2 row-span-2 h-full w-full object-cover" />
+        <img src={displayImages[1]} alt={`${room.name} view 2`} className="h-full w-full object-cover hidden md:block" />
+        <img src={displayImages[2]} alt={`${room.name} view 3`} className="h-full w-full object-cover hidden md:block" />
       </div>
 
       <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -64,8 +64,10 @@ function App() {
 
   const fetchData = useCallback(async () => {
     try {
+      // The backend now provides perfectly sanitized URLs, so no client-side fixing is needed.
       const roomsData = await apiCall('getRooms');
       setRooms(roomsData);
+
       const settingsData = await apiCall('getSettings');
       setSettings(settingsData);
     } catch (err) {

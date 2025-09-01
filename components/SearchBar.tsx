@@ -7,10 +7,17 @@ interface RoomCardProps {
 }
 
 const RoomCard: React.FC<RoomCardProps> = ({ room, onSelectRoom }) => {
+  const placeholderImage = 'https://placehold.co/600x400/e2e8f0/cbd5e1?text=No+Image';
+  const imageUrl = room.images && room.images.length > 0 ? room.images[0] : placeholderImage;
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-xl transition-shadow duration-300 group">
       <div className="relative">
-        <img className="w-full h-56 object-cover" src={room.images[0]} alt={room.name} />
+        <img 
+          className="w-full h-56 object-cover" 
+          src={imageUrl} 
+          alt={room.name} 
+        />
         <div className="absolute top-0 right-0 bg-teal-500 text-white font-bold px-3 py-1 m-4 rounded-md">
           ₹{room.pricePerNight.toLocaleString('en-IN')}/night
         </div>
