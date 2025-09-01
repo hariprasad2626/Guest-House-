@@ -1,3 +1,4 @@
+
 export interface Amenity {
     name: string;
     icon: string; // This will now hold the raw SVG string
@@ -41,4 +42,9 @@ export interface Room {
     amenities: Amenity[];
     maxGuests: number;
     bookings: Booking[];
+}
+
+export interface AppSettings {
+    upiId: string;
+    homepageImageUrl: string;
 }

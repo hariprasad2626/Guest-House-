@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Room } from '../../types';
+import { Room, AppSettings } from '../../types';
 import RoomForm from './RoomForm';
 import AdminBookings from './AdminBookings';
 import AdminAccounting from './AdminAccounting';
@@ -9,8 +10,8 @@ interface AdminDashboardProps {
   rooms: Room[];
   onLogout: () => void;
   onUpdateBookingStatus: (roomId: number, bookingId: number, status: 'confirmed' | 'declined') => void;
-  settings: { upiId: string };
-  onUpdateSettings: (settings: { upiId: string }) => void;
+  settings: AppSettings;
+  onUpdateSettings: (payload: any) => void;
   onSaveRoom: (payload: any) => Promise<void>;
   onDeleteRoom: (roomId: number) => Promise<void>;
 }

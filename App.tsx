@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { type Room, type Booking } from './types';
+import { type Room, type Booking, type AppSettings } from './types';
 import Header from './components/Header';
 import HomePage from './components/Welcome';
 import RoomDetail from './components/PropertyDetailsCard';
@@ -11,10 +12,6 @@ import ErrorMessage from './components/ErrorMessage';
 
 export type View = 'home' | 'roomDetail' | 'adminLogin' | 'adminDashboard' | 'about';
 
-interface AppSettings {
-  upiId: string;
-}
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtONZQoirobVb9DCNoTZLLanmvR1YFnBkcy5xWT-VhH2JwR839O9YGDXFhIcbUfyCtwA/exec';
 
 function App() {
@@ -22,7 +19,7 @@ function App() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ upiId: '' });
+  const [settings, setSettings] = useState<AppSettings>({ upiId: '', homepageImageUrl: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,7 +61,6 @@ function App() {
 
   const fetchData = useCallback(async () => {
     try {
-      // The backend now provides perfectly sanitized URLs, so no client-side fixing is needed.
       const roomsData = await apiCall('getRooms');
       setRooms(roomsData);
 
@@ -102,19 +98,16 @@ function App() {
   
   const handleBookingRequest = async (bookingDetails: any) => {
     try {
-      // The backend will now handle the file upload and return the complete new booking object
       const newBooking: Booking = await apiCall('addBooking', bookingDetails);
       
       const updatedRooms = rooms.map(room => {
         if (room.id === bookingDetails.roomId) {
-          // Use the complete booking object returned from the API to ensure data consistency
           return { ...room, bookings: [...room.bookings, newBooking] };
         }
         return room;
       });
       setRooms(updatedRooms);
       
-      // Also update selectedRoom if it's the one being booked
       if (selectedRoom?.id === bookingDetails.roomId) {
           setSelectedRoom(prev => prev ? {...prev, bookings: [...prev.bookings, newBooking]} : null);
       }
@@ -146,7 +139,6 @@ function App() {
   
   const handleSaveRoom = async (payload: any) => {
     try {
-      // `payload` contains room data, existingImages, and newImages for upload
       const savedRoom: Room = await apiCall('saveRoom', payload);
       
       if (payload.id) { // Existing room updated
@@ -170,10 +162,10 @@ function App() {
     }
   };
 
-  const handleUpdateSettings = async (newSettings: AppSettings) => {
+  const handleUpdateSettings = async (payload: any) => {
     try {
-      await apiCall('updateSettings', newSettings);
-      setSettings(newSettings);
+      const updatedSettings = await apiCall('updateSettings', payload);
+      setSettings(updatedSettings);
     } catch (err) {
       console.error('Failed to update settings:', err);
     }
@@ -194,7 +186,7 @@ function App() {
     switch (currentView) {
       case 'roomDetail':
         const currentRoomData = rooms.find(r => r.id === selectedRoom?.id) || selectedRoom;
-        return currentRoomData ? <RoomDetail room={currentRoomData} onBack={() => navigate('home')} onBook={handleBookingRequest} upiId={settings.upiId} /> : <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} />;
+        return currentRoomData ? <RoomDetail room={currentRoomData} onBack={() => navigate('home')} onBook={handleBookingRequest} upiId={settings.upiId} /> : <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} homepageImageUrl={settings.homepageImageUrl} />;
       case 'adminLogin':
         return <AdminLogin onLogin={handleLogin} />;
       case 'adminDashboard':
@@ -203,7 +195,7 @@ function App() {
         return <AboutPage />;
       case 'home':
       default:
-        return <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} />;
+        return <HomePage rooms={rooms} onSelectRoom={handleSelectRoom} homepageImageUrl={settings.homepageImageUrl} />;
     }
   };
 

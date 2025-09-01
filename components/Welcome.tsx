@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Room } from '../types';
 import RoomCard from './SearchBar';
@@ -5,15 +6,20 @@ import RoomCard from './SearchBar';
 interface HomePageProps {
   rooms: Room[];
   onSelectRoom: (room: Room) => void;
+  homepageImageUrl: string;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ rooms, onSelectRoom }) => {
+const HomePage: React.FC<HomePageProps> = ({ rooms, onSelectRoom, homepageImageUrl }) => {
     // State for the filter inputs
     const [checkin, setCheckin] = useState('');
     const [checkout, setCheckout] = useState('');
     const [guests, setGuests] = useState(1);
 
     const today = new Date().toISOString().split('T')[0];
+    
+    const defaultHeroImage = "url('https://images.unsplash.com/photo-1542314831-068cd1dbb563?q=80&w=2070&auto=format&fit=crop')";
+    const heroImage = homepageImageUrl ? `url('${homepageImageUrl}')` : defaultHeroImage;
+
 
     // useMemo to efficiently filter rooms only when dependencies change
     const filteredRooms = useMemo(() => {
@@ -63,7 +69,7 @@ const HomePage: React.FC<HomePageProps> = ({ rooms, onSelectRoom }) => {
             <div className="relative bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-12 min-h-[400px] flex flex-col justify-center">
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-20"
-                  style={{backgroundImage: "url('https://images.unsplash.com/photo-1542314831-068cd1dbb563?q=80&w=2070&auto=format&fit=crop')"}}
+                  style={{backgroundImage: heroImage}}
                 ></div>
                 <div className="relative z-10 p-8 text-center">
                     <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">ISKCON Newtown Guest House</h2>
