@@ -24,14 +24,23 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     checkout: '',
   });
   const [totalAmount, setTotalAmount] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // New state for carousel
   
-  const placeholderImage = 'https://placehold.co/400x400/e2e8f0/cbd5e1?text=Serene+Escapes';
-  // Create a display-ready array for the grid, padded with placeholders
-  const displayImages = [
-    room.images?.[0] || placeholderImage,
-    room.images?.[1] || placeholderImage,
-    room.images?.[2] || placeholderImage,
-  ];
+  const placeholderImage = 'https://placehold.co/1200x800/e2e8f0/cbd5e1?text=Serene+Escapes';
+  const hasImages = room.images && room.images.length > 0;
+  
+  // Carousel navigation handlers
+  const nextImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % room.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + room.images.length) % room.images.length);
+    }
+  };
 
 
   const handleRequestBooking = (e: React.FormEvent<HTMLFormElement>) => {
@@ -108,16 +117,50 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
           upiId={upiId}
         />
       )}
-      <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-all z-10">
+      <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-all z-20">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-0.5 max-h-[500px]">
-        <img src={displayImages[0]} alt={room.name} className="col-span-2 row-span-2 h-full w-full object-cover" />
-        <img src={displayImages[1]} alt={`${room.name} view 2`} className="h-full w-full object-cover hidden md:block" />
-        <img src={displayImages[2]} alt={`${room.name} view 3`} className="h-full w-full object-cover hidden md:block" />
+      {/* New Image Gallery */}
+      <div className="relative bg-slate-200">
+        <div className="w-full h-[300px] md:h-[500px]">
+          <img 
+              src={hasImages ? room.images[currentImageIndex] : placeholderImage} 
+              alt={room.name} 
+              className="w-full h-full object-cover" 
+          />
+        </div>
+
+        {/* Navigation Arrows */}
+        {hasImages && room.images.length > 1 && (
+        <>
+            <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/60 hover:bg-white/90 backdrop-blur-sm rounded-full p-2 transition-all z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/60 hover:bg-white/90 backdrop-blur-sm rounded-full p-2 transition-all z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+        </>
+        )}
+
+        {/* Thumbnails */}
+        {hasImages && room.images.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+            <div className="flex justify-center gap-3 overflow-x-auto pb-1 no-scrollbar">
+            {room.images.map((img, index) => (
+                <img
+                key={index}
+                src={img}
+                alt={`Thumbnail ${index + 1}`}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-20 h-14 object-cover rounded-md cursor-pointer border-2 transition-all duration-200 ${currentImageIndex === index ? 'border-white scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                />
+            ))}
+            </div>
+        </div>
+        )}
       </div>
 
       <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -192,6 +235,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
           </div>
         </div>
       </div>
+      <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
     </div>
   );
 };
