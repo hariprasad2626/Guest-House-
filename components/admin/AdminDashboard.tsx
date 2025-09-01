@@ -5,6 +5,7 @@ import RoomForm from './RoomForm';
 import AdminBookings from './AdminBookings';
 import AdminAccounting from './AdminAccounting';
 import AdminSettings from './AdminSettings';
+import AdminCalendar from './AdminCalendar'; // Import the new component
 
 interface AdminDashboardProps {
   rooms: Room[];
@@ -16,7 +17,7 @@ interface AdminDashboardProps {
   onDeleteRoom: (roomId: number) => Promise<void>;
 }
 
-type AdminTab = 'rooms' | 'accounting' | 'settings';
+type AdminTab = 'rooms' | 'accounting' | 'settings' | 'calendar'; // Add 'calendar' tab
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpdateBookingStatus, settings, onUpdateSettings, onSaveRoom, onDeleteRoom }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('rooms');
@@ -45,6 +46,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpda
         return <AdminAccounting rooms={rooms} />;
       case 'settings':
         return <AdminSettings settings={settings} onUpdateSettings={onUpdateSettings} />;
+      case 'calendar': // Add case for the calendar
+        return <AdminCalendar rooms={rooms} />;
       case 'rooms':
       default:
         return (
@@ -120,6 +123,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpda
       <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4 flex-wrap gap-4">
         <div className="flex gap-2">
             <TabButton tab="rooms" label="Rooms" />
+            <TabButton tab="calendar" label="Calendar" /> 
             <TabButton tab="accounting" label="Accounting" />
             <TabButton tab="settings" label="Settings" />
         </div>
