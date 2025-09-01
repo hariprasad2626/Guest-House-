@@ -11,7 +11,7 @@ interface AdminDashboardProps {
   onUpdateBookingStatus: (roomId: number, bookingId: number, status: 'confirmed' | 'declined') => void;
   settings: { upiId: string };
   onUpdateSettings: (settings: { upiId: string }) => void;
-  onSaveRoom: (room: Room) => Promise<void>;
+  onSaveRoom: (payload: any) => Promise<void>;
   onDeleteRoom: (roomId: number) => Promise<void>;
 }
 
@@ -33,8 +33,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpda
     setIsFormOpen(true);
   };
 
-  const handleSaveRoom = async (roomData: Room) => {
-    await onSaveRoom(roomData);
+  const handleSaveRoom = async (payload: any) => {
+    await onSaveRoom(payload);
     setIsFormOpen(false);
   };
 

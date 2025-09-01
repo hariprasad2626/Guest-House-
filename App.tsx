@@ -140,13 +140,15 @@ function App() {
     }
   };
   
-  const handleSaveRoom = async (roomData: Room) => {
+  const handleSaveRoom = async (payload: any) => {
     try {
-      const savedRoom = await apiCall('saveRoom', roomData);
-      if (roomData.id) { // Existing room updated
-        setRooms(rooms.map(r => r.id === roomData.id ? {...r, ...roomData} : r));
+      // `payload` contains room data, existingImages, and newImages for upload
+      const savedRoom: Room = await apiCall('saveRoom', payload);
+      
+      if (payload.id) { // Existing room updated
+        setRooms(rooms.map(r => r.id === savedRoom.id ? savedRoom : r));
       } else { // New room created
-        setRooms([...rooms, { ...roomData, id: savedRoom.id, bookings: [], amenities: [] }]);
+        setRooms([...rooms, savedRoom]);
       }
     } catch (err) {
       console.error('Failed to save room:', err);

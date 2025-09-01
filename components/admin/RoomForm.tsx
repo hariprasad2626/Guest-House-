@@ -3,9 +3,19 @@ import { Room } from '../../types';
 
 interface RoomFormProps {
   room: Room | null;
-  onSave: (room: Room) => void;
+  onSave: (payload: any) => void;
   onClose: () => void;
 }
+
+// Helper to convert File to Base64
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
   const [formData, setFormData] = useState<Omit<Room, 'id' | 'amenities' | 'images' | 'bookings'>>({
@@ -14,7 +24,8 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
     pricePerNight: 0,
     maxGuests: 1,
   });
-  const [imageUrls, setImageUrls] = useState('');
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
 
   useEffect(() => {
     if (room) {
@@ -24,7 +35,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
         pricePerNight: room.pricePerNight,
         maxGuests: room.maxGuests,
       });
-      setImageUrls(room.images.join(', '));
+      setExistingImages(room.images || []);
     }
   }, [room]);
 
@@ -35,13 +46,41 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
       [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setNewImages(prev => [...prev, ...Array.from(e.target.files)]);
+    }
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const removeNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const roomDataToSave: Room = {
+
+    const newImagesPayload = await Promise.all(
+        newImages.map(async (file) => {
+            const base64 = await fileToBase64(file);
+            return {
+                mimeType: file.type,
+                data: base64.split(',')[1], // Send only the base64 part
+                fileName: file.name
+            };
+        })
+    );
+
+    const roomDataToSave = {
         ...formData,
         id: room?.id || 0, // Backend will assign new ID if 0
-        images: imageUrls.split(',').map(url => url.trim()).filter(url => url),
+        existingImages: existingImages,
+        newImages: newImagesPayload,
+        // Preserve these properties as they are not editable in this form
         amenities: room?.amenities || [],
         bookings: room?.bookings || [],
     };
@@ -61,11 +100,32 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
             <label htmlFor="description" className="block text-sm font-medium text-slate-600">Description</label>
             <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full input" required />
           </div>
+          
+          {/* Image Management */}
           <div>
-            <label htmlFor="imageUrls" className="block text-sm font-medium text-slate-600">Image URLs</label>
-            <textarea name="imageUrls" id="imageUrls" value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} rows={3} className="mt-1 block w-full input" placeholder="https://.../image1.jpg, https://.../image2.jpg" required />
-            <p className="text-xs text-slate-500 mt-1">Paste image URLs, separated by commas.</p>
+            <label className="block text-sm font-medium text-slate-600">Images</label>
+            <div className="mt-2 grid grid-cols-3 gap-4">
+              {existingImages.map((url, index) => (
+                <div key={index} className="relative group">
+                  <img src={url} alt={`Existing image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                  <button type="button" onClick={() => removeExistingImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+                </div>
+              ))}
+              {newImages.map((file, index) => (
+                <div key={index} className="relative group">
+                   <img src={URL.createObjectURL(file)} alt={`New image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                   <button type="button" onClick={() => removeNewImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <label htmlFor="imageUpload" className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm py-2 px-4 rounded-lg">
+                Upload New Images
+              </label>
+              <input type="file" id="imageUpload" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
+            </div>
           </div>
+          
           <div>
             <label htmlFor="pricePerNight" className="block text-sm font-medium text-slate-600">Price per Night (₹)</label>
             <input type="number" name="pricePerNight" id="pricePerNight" value={formData.pricePerNight} onChange={handleChange} className="mt-1 block w-full input" required />
