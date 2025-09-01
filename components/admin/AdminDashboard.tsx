@@ -17,7 +17,7 @@ interface AdminDashboardProps {
   onDeleteRoom: (roomId: number) => Promise<void>;
 }
 
-type AdminTab = 'rooms' | 'accounting' | 'settings' | 'calendar'; // Add 'calendar' tab
+type AdminTab = 'rooms' | 'calendar' | 'accounting' | 'settings'; // Add 'calendar' tab
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpdateBookingStatus, settings, onUpdateSettings, onSaveRoom, onDeleteRoom }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('rooms');
@@ -42,12 +42,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ rooms, onLogout, onUpda
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'calendar': // Add case for the calendar
+        return <AdminCalendar rooms={rooms} />;
       case 'accounting':
         return <AdminAccounting rooms={rooms} />;
       case 'settings':
         return <AdminSettings settings={settings} onUpdateSettings={onUpdateSettings} />;
-      case 'calendar': // Add case for the calendar
-        return <AdminCalendar rooms={rooms} />;
       case 'rooms':
       default:
         return (

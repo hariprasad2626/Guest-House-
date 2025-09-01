@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Room, Booking } from '../../types';
+import { Room } from '../../types';
 
 interface AdminCalendarProps {
   rooms: Room[];
