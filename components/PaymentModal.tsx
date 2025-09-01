@@ -30,7 +30,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [comments, setComments] = useState('');
   const [error, setError] = useState('');
   
-  const payeeName = 'Serene Escapes';
+  const payeeName = 'ISKCON Newtown Guest House';
   const qrData = encodeURIComponent(`upi://pay?pa=${upiId}&pn=${payeeName}&am=${totalAmount}&cu=INR`);
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrData}`;
 

@@ -5,23 +5,23 @@ const AboutPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-fade-in my-8">
             <div className="relative h-64">
                 <img 
-                    src="https://images.unsplash.com/photo-1562778612-e1e073d31530?q=80&w=2070&auto=format&fit=crop" 
-                    alt="Lobby of Serene Escapes"
+                    src="https://images.unsplash.com/photo-1582510014285-816694589f66?q=80&w=1974&auto=format&fit=crop" 
+                    alt="ISKCON Newtown Temple"
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <h1 className="text-4xl font-extrabold text-white tracking-tight">About Serene Escapes</h1>
+                    <h1 className="text-4xl font-extrabold text-white tracking-tight text-center">About ISKCON Newtown Guest House</h1>
                 </div>
             </div>
             <div className="p-8 md:p-12">
                 <div className="max-w-3xl mx-auto">
                     <section>
-                        <h2 className="text-2xl font-bold text-slate-800 mb-4">Our Story</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-4">Our Mission</h2>
                         <p className="text-slate-600 leading-relaxed mb-4">
-                            Founded in 2023, Serene Escapes was born from a simple idea: to create a peaceful sanctuary where guests can unwind, reconnect, and experience genuine hospitality. We envisioned a place that combines the comfort of home with the quiet luxury of a boutique guesthouse. 
+                            Welcome to the ISKCON Newtown Guest House. Our primary mission is to provide a comfortable, peaceful, and spiritually uplifting stay for visitors, devotees, and guests attending the temple. We aim to create a serene environment that complements your visit to the holy temple grounds.
                         </p>
                         <p className="text-slate-600 leading-relaxed">
-                            Nestled away from the hustle and bustle, our guesthouse is designed to be your personal retreat. Every room, every space, and every detail has been thoughtfully curated to promote tranquility and relaxation. We believe that a great stay is about more than just a comfortable bed—it's about creating lasting memories.
+                            Located conveniently close to the temple, our guesthouse offers a tranquil retreat from the everyday. We strive to provide clean, modern accommodations and warm, friendly service to ensure your stay is both memorable and comfortable.
                         </p>
                     </section>
                     <section className="mt-10">
@@ -30,29 +30,29 @@ const AboutPage: React.FC = () => {
                             <li className="flex items-start gap-4">
                                 <span className="text-teal-500 font-bold text-xl mt-1">&#10003;</span>
                                 <div>
-                                    <h3 className="font-semibold text-slate-700">Exceptional Comfort</h3>
-                                    <p>Beautifully appointed rooms with modern amenities designed for your ultimate comfort.</p>
+                                    <h3 className="font-semibold text-slate-700">Spiritual Ambiance</h3>
+                                    <p>Experience a peaceful atmosphere designed to enhance your spiritual journey and visit to the temple.</p>
                                 </div>
                             </li>
                             <li className="flex items-start gap-4">
                                 <span className="text-teal-500 font-bold text-xl mt-1">&#10003;</span>
                                 <div>
-                                    <h3 className="font-semibold text-slate-700">Personalized Service</h3>
-                                    <p>Our friendly staff is dedicated to making your stay perfect, from check-in to check-out.</p>
+                                    <h3 className="font-semibold text-slate-700">Comfortable Stays</h3>
+                                    <p>Clean, well-maintained rooms with essential amenities to ensure you have a restful stay.</p>
                                 </div>
                             </li>
                              <li className="flex items-start gap-4">
                                 <span className="text-teal-500 font-bold text-xl mt-1">&#10003;</span>
                                 <div>
-                                    <h3 className="font-semibold text-slate-700">Peaceful Ambiance</h3>
-                                    <p>Enjoy our lush gardens, serene common areas, and a quiet atmosphere perfect for relaxation.</p>
+                                    <h3 className="font-semibold text-slate-700">Proximity to Temple</h3>
+                                    <p>Our prime location allows for easy and convenient access to all temple activities and events.</p>
                                 </div>
                             </li>
                              <li className="flex items-start gap-4">
                                 <span className="text-teal-500 font-bold text-xl mt-1">&#10003;</span>
                                 <div>
-                                    <h3 className="font-semibold text-slate-700">Prime Location</h3>
-                                    <p>Conveniently located to offer both seclusion and easy access to local attractions.</p>
+                                    <h3 className="font-semibold text-slate-700">Dedicated Service</h3>
+                                    <p>Our staff is here to assist you and make your visit as smooth and pleasant as possible.</p>
                                 </div>
                             </li>
                         </ul>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Room, ALL_AMENITIES, Amenity } from '../../types';
+import { Room, COMMON_AMENITIES, Amenity } from '../../types';
+import { GoogleGenAI } from "@google/genai";
 
 interface RoomFormProps {
   room: Room | null;
@@ -27,6 +28,10 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
+  
+  const [customAmenity, setCustomAmenity] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState('');
 
 
   useEffect(() => {
@@ -56,13 +61,53 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
     }
   };
 
-  const handleAmenityChange = (amenity: Amenity, isChecked: boolean) => {
-    if (isChecked) {
-      setSelectedAmenities(prev => [...prev, amenity]);
-    } else {
-      setSelectedAmenities(prev => prev.filter(a => a.name !== amenity.name));
+  const addAmenity = (amenity: Amenity) => {
+    if (!selectedAmenities.some(a => a.name.toLowerCase() === amenity.name.toLowerCase())) {
+        setSelectedAmenities(prev => [...prev, amenity]);
     }
   };
+
+  const removeAmenity = (name: string) => {
+    setSelectedAmenities(prev => prev.filter(a => a.name !== name));
+  };
+  
+  const handleAddCustomAmenity = async () => {
+    const name = customAmenity.trim();
+    if (!name || isGenerating || selectedAmenities.some(a => a.name.toLowerCase() === name.toLowerCase())) {
+        setCustomAmenity('');
+        return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError('');
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const model = 'gemini-2.5-flash';
+        const prompt = `Generate a simple, single-color, line-art SVG icon for "${name}". The SVG should have a viewBox of '0 0 24 24', a stroke-width of 1.5, and use 'currentColor' for the stroke value so it inherits its color. Provide ONLY the raw <svg>...</svg> code itself, without any XML declaration, comments, or surrounding text.`;
+        
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+        });
+
+        let svgIcon = response.text.trim();
+        // Clean up potential markdown fences from the response
+        svgIcon = svgIcon.replace(/```svg\n?/, '').replace(/```$/, '').trim();
+
+        if (svgIcon.startsWith('<svg') && svgIcon.endsWith('</svg>')) {
+            addAmenity({ name, icon: svgIcon });
+            setCustomAmenity('');
+        } else {
+            throw new Error("AI did not return a valid SVG icon. Please try a different name.");
+        }
+    } catch (err: any) {
+        console.error("Gemini API error:", err);
+        setGenerationError(`Could not generate icon: ${err.message}`);
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
 
   const removeExistingImage = (index: number) => {
     setExistingImages(prev => prev.filter((_, i) => i !== index));
@@ -91,7 +136,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
         id: room?.id || 0, // Backend will assign new ID if 0
         existingImages: existingImages,
         newImages: newImagesPayload,
-        amenities: selectedAmenities, // Use the new state for amenities
+        amenities: selectedAmenities,
         bookings: room?.bookings || [],
     };
     onSave(roomDataToSave);
@@ -111,23 +156,54 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
             <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full input" required />
           </div>
           
-          {/* Amenities Management */}
+          {/* New Amenities Management Section */}
           <div>
             <label className="block text-sm font-medium text-slate-600">Amenities</label>
-            <div className="mt-2 grid grid-cols-2 gap-4 border border-slate-200 p-4 rounded-md">
-              {ALL_AMENITIES.map(amenity => (
-                <div key={amenity.name} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`amenity-${amenity.name}`}
-                    name={amenity.name}
-                    checked={selectedAmenities.some(a => a.name === amenity.name)}
-                    onChange={(e) => handleAmenityChange(amenity, e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                  />
-                  <label htmlFor={`amenity-${amenity.name}`} className="ml-3 text-sm text-slate-700">{amenity.name}</label>
+            <div className="flex flex-wrap gap-2 mt-2 p-2 border border-slate-200 rounded-md min-h-[40px]">
+                {selectedAmenities.map(amenity => (
+                    <div key={amenity.name} className="flex items-center gap-2 bg-blue-100 text-blue-800 text-sm font-semibold pl-3 pr-1 py-1 rounded-full">
+                        <span className="h-4 w-4" dangerouslySetInnerHTML={{ __html: amenity.icon }} />
+                        <span>{amenity.name}</span>
+                        <button type="button" onClick={() => removeAmenity(amenity.name)} className="bg-blue-200 hover:bg-blue-300 rounded-full h-4 w-4 flex items-center justify-center text-xs">&times;</button>
+                    </div>
+                ))}
+            </div>
+            <div className="flex gap-2 mt-2">
+                <input 
+                    type="text" 
+                    value={customAmenity} 
+                    onChange={e => setCustomAmenity(e.target.value)} 
+                    placeholder="Add custom amenity (e.g., Ocean View)" 
+                    className="flex-grow input"
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomAmenity(); }}}
+                />
+                <button 
+                    type="button" 
+                    onClick={handleAddCustomAmenity} 
+                    disabled={isGenerating || !customAmenity.trim()}
+                    className="bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-700 disabled:bg-slate-300 transition-colors"
+                >
+                    {isGenerating ? 'Generating...' : 'Add'}
+                </button>
+            </div>
+            {generationError && <p className="text-red-500 text-xs mt-1">{generationError}</p>}
+            <div className="mt-3">
+                <p className="text-xs text-slate-500 mb-2">Suggestions:</p>
+                <div className="flex flex-wrap gap-2">
+                    {COMMON_AMENITIES.map(amenity => (
+                        !selectedAmenities.some(a => a.name === amenity.name) && (
+                            <button 
+                                key={amenity.name} 
+                                type="button" 
+                                onClick={() => addAmenity(amenity)}
+                                className="flex items-center gap-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1 px-2 rounded-md border border-slate-200"
+                            >
+                                <span className="h-4 w-4" dangerouslySetInnerHTML={{ __html: amenity.icon }} />
+                                <span>{amenity.name}</span>
+                            </button>
+                        )
+                    ))}
                 </div>
-              ))}
             </div>
           </div>
           

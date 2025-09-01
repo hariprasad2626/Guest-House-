@@ -26,7 +26,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
   const [totalAmount, setTotalAmount] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // New state for carousel
   
-  const placeholderImage = 'https://placehold.co/1200x800/e2e8f0/cbd5e1?text=Serene+Escapes';
+  const placeholderImage = 'https://placehold.co/1200x800/e2e8f0/cbd5e1?text=ISKCON+Newtown';
   const hasImages = room.images && room.images.length > 0;
   
   // Carousel navigation handlers
