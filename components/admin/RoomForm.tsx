@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Room } from '../../types';
+import { Room, ALL_AMENITIES, Amenity } from '../../types';
 
 interface RoomFormProps {
   room: Room | null;
@@ -26,6 +26,8 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
   });
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<Amenity[]>([]);
+
 
   useEffect(() => {
     if (room) {
@@ -36,6 +38,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
         maxGuests: room.maxGuests,
       });
       setExistingImages(room.images || []);
+      setSelectedAmenities(room.amenities || []);
     }
   }, [room]);
 
@@ -50,6 +53,14 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setNewImages(prev => [...prev, ...Array.from(e.target.files)]);
+    }
+  };
+
+  const handleAmenityChange = (amenity: Amenity, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedAmenities(prev => [...prev, amenity]);
+    } else {
+      setSelectedAmenities(prev => prev.filter(a => a.name !== amenity.name));
     }
   };
 
@@ -80,8 +91,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
         id: room?.id || 0, // Backend will assign new ID if 0
         existingImages: existingImages,
         newImages: newImagesPayload,
-        // Preserve these properties as they are not editable in this form
-        amenities: room?.amenities || [],
+        amenities: selectedAmenities, // Use the new state for amenities
         bookings: room?.bookings || [],
     };
     onSave(roomDataToSave);
@@ -99,6 +109,26 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSave, onClose }) => {
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-slate-600">Description</label>
             <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full input" required />
+          </div>
+          
+          {/* Amenities Management */}
+          <div>
+            <label className="block text-sm font-medium text-slate-600">Amenities</label>
+            <div className="mt-2 grid grid-cols-2 gap-4 border border-slate-200 p-4 rounded-md">
+              {ALL_AMENITIES.map(amenity => (
+                <div key={amenity.name} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`amenity-${amenity.name}`}
+                    name={amenity.name}
+                    checked={selectedAmenities.some(a => a.name === amenity.name)}
+                    onChange={(e) => handleAmenityChange(amenity, e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                  />
+                  <label htmlFor={`amenity-${amenity.name}`} className="ml-3 text-sm text-slate-700">{amenity.name}</label>
+                </div>
+              ))}
+            </div>
           </div>
           
           {/* Image Management */}
