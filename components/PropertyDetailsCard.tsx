@@ -19,6 +19,8 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<Omit<Booking, 'id' | 'status' | 'totalAmount' | 'paymentScreenshot' | 'comments'>>({
     roomId: 0,
+    name: '',
+    phone: '',
     email: '',
     checkin: '',
     checkout: '',
@@ -47,11 +49,13 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     e.preventDefault();
     setError('');
     const formData = new FormData(e.currentTarget);
+    const name = formData.get('name');
+    const phone = formData.get('phone');
     const email = formData.get('email');
     const checkin = formData.get('checkin');
     const checkout = formData.get('checkout');
 
-    if (!email || !checkin || !checkout) {
+    if (!name || !phone || !email || !checkin || !checkout) {
       setError('Please fill in all fields.');
       return;
     }
@@ -85,6 +89,8 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     setTotalAmount(nights * room.pricePerNight);
     setBookingDetails({
         roomId: room.id,
+        name: name as string,
+        phone: phone as string,
         email: email as string,
         checkin: checkin as string,
         checkout: checkout as string,
@@ -212,6 +218,14 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
             ) : (
               <form onSubmit={handleRequestBooking}>
                 <div className="space-y-4">
+                   <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-slate-600">Full Name</label>
+                    <input type="text" id="name" name="name" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" placeholder="Your full name" required />
+                  </div>
+                   <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-slate-600">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" placeholder="Your phone number" required />
+                  </div>
                   <div>
                     <label htmlFor="checkin" className="block text-sm font-medium text-slate-600">Check-in</label>
                     <input type="date" id="checkin" name="checkin" min={today} className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" required />

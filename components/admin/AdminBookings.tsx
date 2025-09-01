@@ -13,7 +13,7 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
 
     const handleApprove = (bookingId: number) => {
         onUpdateBookingStatus(room.id, bookingId, 'confirmed');
-        alert(`Booking Confirmed!\n\nA simulated invoice email has been sent to the customer.`);
+        alert(`Booking Confirmed!\n\nA confirmation email has been sent to the guest.`);
         onClose();
     };
 
@@ -49,8 +49,10 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                                         {/* Column 1: Booker Info */}
                                         <div className="space-y-1">
-                                            <p className="font-semibold text-slate-900 break-all">{b.email}</p>
-                                            <p className="text-sm text-slate-500">
+                                            <p className="font-semibold text-slate-900 break-all">{b.name}</p>
+                                            <p className="text-sm text-slate-500 break-all">{b.email}</p>
+                                            <p className="text-sm text-slate-500">{b.phone}</p>
+                                            <p className="text-sm text-slate-500 pt-1">
                                                 {new Date(b.checkin).toLocaleDateString()} &rarr; {new Date(b.checkout).toLocaleDateString()}
                                             </p>
                                             <p className="text-sm text-slate-500 pt-1">
@@ -60,10 +62,10 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
 
                                         {/* Column 2: Payment Verification Details */}
                                         <div className="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-2">
-                                            <div className="flex items-center gap-2">
+                                            <a href={b.paymentScreenshot} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline">
                                                 <PaperclipIcon />
-                                                <p className="text-sm text-slate-700 font-medium break-all" title={b.paymentScreenshot}>{b.paymentScreenshot || 'No screenshot'}</p>
-                                            </div>
+                                                <p className="text-sm text-slate-700 font-medium break-all" title={b.paymentScreenshot}>View Screenshot</p>
+                                            </a>
                                             {b.comments && (
                                                 <div className="border-t border-slate-200 pt-2">
                                                     <p className="text-sm text-slate-600 italic">"{b.comments}"</p>
@@ -89,8 +91,9 @@ const AdminBookings: React.FC<AdminBookingsProps> = ({ room, onClose, onUpdateBo
                         {confirmed.length > 0 ? (
                             <ul className="divide-y divide-slate-200 border-y border-slate-200">
                             {confirmed.map(b => (
-                                <li key={b.id} className="py-3">
-                                    <p className="font-medium text-slate-800">{b.email}</p>
+                                <li key={b.id} className="py-3 space-y-1">
+                                    <p className="font-medium text-slate-800">{b.name}</p>
+                                    <p className="text-sm text-slate-500">{b.email} &bull; {b.phone}</p>
                                     <p className="text-sm text-slate-500">
                                         {new Date(b.checkin).toLocaleDateString()} &rarr; {new Date(b.checkout).toLocaleDateString()}
                                     </p>

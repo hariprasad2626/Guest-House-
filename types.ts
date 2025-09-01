@@ -21,6 +21,8 @@ export type BookingStatus = 'pending' | 'confirmed';
 export interface Booking {
     id: number;
     roomId: number;
+    name: string;
+    phone: string;
     email: string;
     checkin: string; // YYYY-MM-DD
     checkout: string; // YYYY-MM-DD

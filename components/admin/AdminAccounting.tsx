@@ -44,7 +44,7 @@ const AdminAccounting: React.FC<AdminAccountingProps> = ({ rooms }) => {
               <thead className="bg-slate-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Room</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Guest Email</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Guest Details</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Dates</th>
                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Amount Paid</th>
                 </tr>
@@ -53,7 +53,11 @@ const AdminAccounting: React.FC<AdminAccountingProps> = ({ rooms }) => {
                 {confirmedBookings.map(booking => (
                   <tr key={booking.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{booking.roomName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{booking.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        <div className="font-medium text-slate-800">{booking.name}</div>
+                        <div>{booking.email}</div>
+                        <div>{booking.phone}</div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(booking.checkin).toLocaleDateString()} - {new Date(booking.checkout).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-800">₹{booking.totalAmount.toLocaleString('en-IN')}</td>
                   </tr>
