@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 
+// Helper to convert File to Base64
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (paymentInfo: { screenshot?: File; comments: string }) => void;
+  onSubmit: (paymentInfo: { screenshotData?: { mimeType: string; data: string; fileName: string; }; comments: string }) => void;
   roomName: string;
   totalAmount: number;
   upiId: string;
@@ -25,14 +34,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const qrData = encodeURIComponent(`upi://pay?pa=${upiId}&pn=${payeeName}&am=${totalAmount}&cu=INR`);
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrData}`;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!screenshot) {
       setError('Please upload a screenshot as proof of payment.');
       return;
     }
     setError('');
-    onSubmit({ screenshot, comments });
+    
+    const base64 = await fileToBase64(screenshot);
+    const screenshotData = {
+        mimeType: screenshot.type,
+        data: base64.split(',')[1], // Send only the base64 part
+        fileName: screenshot.name,
+    };
+
+    onSubmit({ screenshotData, comments });
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

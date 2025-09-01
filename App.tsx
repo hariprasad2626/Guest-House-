@@ -98,21 +98,23 @@ function App() {
     navigate('home');
   };
   
-  const handleBookingRequest = async (bookingDetails: Omit<Booking, 'id' | 'status'>) => {
+  const handleBookingRequest = async (bookingDetails: any) => {
     try {
-      const newBooking = await apiCall('addBooking', bookingDetails);
+      // The backend will now handle the file upload and return the complete new booking object
+      const newBooking: Booking = await apiCall('addBooking', bookingDetails);
+      
       const updatedRooms = rooms.map(room => {
         if (room.id === bookingDetails.roomId) {
-          const newBookingData = { ...bookingDetails, ...newBooking };
-          return { ...room, bookings: [...room.bookings, newBookingData] };
+          // Use the complete booking object returned from the API to ensure data consistency
+          return { ...room, bookings: [...room.bookings, newBooking] };
         }
         return room;
       });
       setRooms(updatedRooms);
+      
       // Also update selectedRoom if it's the one being booked
       if (selectedRoom?.id === bookingDetails.roomId) {
-          const newBookingData = { ...bookingDetails, ...newBooking };
-          setSelectedRoom(prev => prev ? {...prev, bookings: [...prev.bookings, newBookingData]} : null);
+          setSelectedRoom(prev => prev ? {...prev, bookings: [...prev.bookings, newBooking]} : null);
       }
     } catch (err) {
       console.error('Failed to add booking:', err);

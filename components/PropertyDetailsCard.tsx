@@ -3,10 +3,13 @@ import { type Room, type Booking } from '../types';
 import AmenityChip from './AmenityChip';
 import PaymentModal from './PaymentModal';
 
+type BookingRequestPayload = Omit<Booking, 'id' | 'status' | 'paymentScreenshot'> & {
+    paymentScreenshotData?: { mimeType: string; data: string; fileName: string; };
+};
 interface RoomDetailProps {
   room: Room;
   onBack: () => void;
-  onBook: (bookingDetails: Omit<Booking, 'id' | 'status'>) => void;
+  onBook: (bookingDetails: BookingRequestPayload) => void;
   upiId: string;
 }
 
@@ -44,6 +47,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     }
 
     const isDateConflict = room.bookings.some(booking => {
+        if (booking.status !== 'confirmed') return false; // Only check against confirmed bookings
         const existingCheckin = new Date(booking.checkin);
         const existingCheckout = new Date(booking.checkout);
         return (checkinDate < existingCheckout && checkoutDate > existingCheckin);
@@ -70,11 +74,11 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ room, onBack, onBook, upiId }) 
     setPaymentModalOpen(true);
   };
   
-  const handleConfirmBooking = (paymentInfo: { screenshot?: File; comments: string }) => {
+  const handleConfirmBooking = (paymentInfo: { screenshotData?: { mimeType: string; data: string; fileName: string; }; comments: string }) => {
     onBook({
         ...bookingDetails,
         totalAmount,
-        paymentScreenshot: paymentInfo.screenshot?.name,
+        paymentScreenshotData: paymentInfo.screenshotData,
         comments: paymentInfo.comments
     });
     setBookingRequested(true);
